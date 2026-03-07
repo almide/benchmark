@@ -15,6 +15,7 @@ LOGS_DIR    = File.join(BASE_DIR, 'logs')
 
 GO_DIR = File.join(Dir.home, '.local', 'go')
 NPM_PREFIX = File.join(Dir.home, '.local', 'npm')
+ALMIDE_DIR = ENV['ALMIDE_DIR'] || File.join(Dir.home, '.local', 'almide')
 
 LANGUAGES = {
   'rust'        => { exts: %w[rs],     version_cmd: 'rustc --version' },
@@ -36,6 +37,10 @@ LANGUAGES = {
   'scheme'      => { exts: %w[scm],    version_cmd: 'guile --version | head -1' },
   'ocaml'       => { exts: %w[ml mli], version_cmd: 'ocaml --version' },
   'haskell'     => { exts: %w[hs],     version_cmd: 'ghc --version' },
+  'almide'      => { exts: %w[almd],   version_cmd: 'almide --version 2>&1 || echo "almide (local)"',
+                     extra_files: %w[CLAUDE.md build.sh],
+                     extra_prompt: 'Write code in Almide (.almd). CLAUDE.md contains the full language reference and build instructions. ' \
+                                   'Write a single file minigit.almd, then run: bash build.sh' },
 }
 
 TRIALS = 3
@@ -48,6 +53,7 @@ selected_languages = nil
 selected_trials = TRIALS
 selected_start = 1
 dry_run = false
+v1_only = false
 
 i = 0
 while i < ARGV.length
@@ -63,6 +69,9 @@ while i < ARGV.length
     i += 2
   when '--dry-run'
     dry_run = true
+    i += 1
+  when '--v1-only'
+    v1_only = true
     i += 1
   else
     i += 1
@@ -100,7 +109,7 @@ def run_cmd(cmd, dir: nil, timeout: 600)
 end
 
 def extra_path
-  "#{GO_DIR}/bin:#{NPM_PREFIX}/bin"
+  "#{ALMIDE_DIR}:#{GO_DIR}/bin:#{NPM_PREFIX}/bin"
 end
 
 
@@ -275,6 +284,9 @@ selected_trials.times do |trial_idx|
     puts "\n--- Phase 1: v1 ---"
     FileUtils.cp(File.join(BASE_DIR, 'SPEC-v1.txt'), v1_dir)
     FileUtils.cp(File.join(BASE_DIR, 'test-v1.sh'), v1_dir)
+    (LANGUAGES[lang][:extra_files] || []).each do |f|
+      FileUtils.cp(File.join(BASE_DIR, f), v1_dir)
+    end
 
     v1_prompt = "Implement minigit as described in SPEC-v1.txt using #{lang.capitalize}. " \
                 "The executable must be named 'minigit' and be runnable as ./minigit. " \
@@ -306,6 +318,7 @@ selected_trials.times do |trial_idx|
     end
 
     # --- Phase 2: v2 (copy v1 then extend) ---
+    unless v1_only
     puts "\n--- Phase 2: v2 ---"
     FileUtils.cp_r(v1_dir, v2_dir)
     FileUtils.cp(File.join(BASE_DIR, 'SPEC-v2.txt'), v2_dir)
@@ -337,6 +350,7 @@ selected_trials.times do |trial_idx|
       record[:v2_loc] = count_loc(v2_dir, lang)
       puts "  LOC: #{record[:v2_loc]}"
     end
+    end # unless v1_only
 
     results << record
     puts

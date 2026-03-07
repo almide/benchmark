@@ -1,32 +1,3 @@
-# How to write code in this project
-
-This project uses the Almide programming language. You write `.almd` files and compile them to native binaries.
-
-## Workflow
-
-1. Write code in `minigit.almd` (ONE file only)
-2. Run `bash build.sh` to compile (this runs: almide → Rust → native binary)
-3. The resulting `./minigit` binary is ready to test
-
-Do NOT install anything, do NOT clone any repository, do NOT run cargo. Just write the `.almd` file and run `bash build.sh`.
-
-## Key rules for Almide
-
-- `effect fn` for any function that does I/O (file read/write, println)
-- `main` receives args as `List[String]` where args[0] is the program name
-- `println` for ALL output. There is no `print` function.
-- `++` for string/list concatenation, NOT `+`
-- `[]` for generics, NOT `<>`
-- Empty list = `[]`
-- `_` is ONLY for match wildcard patterns
-- `do { guard COND else ok(()) ... }` for loops (no `while`/`loop`/`for`)
-- `if` MUST have `else` branch — use `guard ... else` for early returns
-- No `return` keyword — last expression in block is the return value
-- No `null`/`nil` — use `Option[T]` with `some(v)` / `none`
-- No exceptions — use `Result[T, E]` with `ok(v)` / `err(e)`
-
-## Complete Almide language reference below
-
 # Almide Quick Reference (for AI code generation)
 
 File extension: `.almd`
