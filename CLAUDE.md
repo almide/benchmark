@@ -70,10 +70,10 @@ effect fn main(args: List[String]) -> Result[Unit, AppError] = {
 (* Interp *)    "hello ${name}"
 (* Let/Var *)   let x = 1    var y = 2    y = 3
 
-(* fs *)        read_text(p) write(p,s) append(p,s) mkdir_p(p) exists?(p)->Bool
+(* fs *)        read_text(p) read_lines(p)->List write(p,s) append(p,s) mkdir_p(p) exists?(p)->Bool remove(p) list_dir(p)->List
 (* string *)    trim split join len lines pad_left slice to_bytes contains starts_with? ends_with? replace to_int char_at
-(* list *)      get(i)->Option get_or(i,default) len sort contains each map filter find fold
-(* map *)       new() get(k)->Option set(k,v) contains(k) remove(k) keys()->List values() len entries from_list(xs,fn)
+(* list *)      get(i)->Option get_or(i,default) len sort reverse contains any(fn) all(fn) each map filter find fold
+(* map *)       new() get(k)->Option get_or(k,default) set(k,v) contains(k) remove(k) keys()->List values() len entries from_list(xs,fn)
 (* int *)       to_string to_hex
 (* env *)       unix_timestamp() args()
 (* io *)        println(s)  (* no print, only println *)
