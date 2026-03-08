@@ -74,6 +74,8 @@ effect fn main(args: List[String]) -> Result[Unit, AppError] = {
 (* string *)    trim split join len lines pad_left slice to_bytes contains starts_with? ends_with? replace to_int char_at
 (* list *)      get(i)->Option get_or(i,default) len sort reverse contains any(fn) all(fn) each map filter find fold
 (* map *)       new() get(k)->Option get_or(k,default) set(k,v) contains(k) remove(k) keys()->List values() len entries from_list(xs,fn)
+(* path *)      join(base,child) dirname(p) basename(p) extension(p)->Option is_absolute?(p)->Bool
+(* json *)      parse(text)->Result[Json] stringify(j) get(j,k)->Option get_string get_int get_bool get_array keys from_string from_int from_bool null array from_map  (* requires: import json *)
 (* int *)       to_string to_hex
 (* env *)       unix_timestamp() args()
 (* io *)        println(s)  (* no print, only println *)
