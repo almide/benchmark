@@ -71,12 +71,15 @@ effect fn main(args: List[String]) -> Result[Unit, AppError] = {
 (* Let/Var *)   let x = 1    var y = 2    y = 3
 
 (* fs *)        read_text(p) read_lines(p)->List write(p,s) append(p,s) mkdir_p(p) exists?(p)->Bool remove(p) list_dir(p)->List
-(* string *)    trim split join len lines pad_left slice to_bytes contains starts_with? ends_with? replace to_int char_at
-(* list *)      get(i)->Option get_or(i,default) len sort reverse contains any(fn) all(fn) each map filter find fold
+(* string *)    trim split join len lines pad_left slice to_bytes from_bytes contains starts_with? ends_with? replace to_int char_at chars index_of(s,needle)->Option repeat(s,n) is_digit?(s)->Bool is_alpha?(s) is_alphanumeric?(s) is_whitespace?(s)
+(* list *)      get(i)->Option get_or(i,default) len sort sort_by(fn) reverse contains any(fn) all(fn) each map filter find fold enumerate zip(a,b) flatten take(n) drop(n) unique
 (* map *)       new() get(k)->Option get_or(k,default) set(k,v) contains(k) remove(k) keys()->List values() len entries from_list(xs,fn)
 (* path *)      join(base,child) dirname(p) basename(p) extension(p)->Option is_absolute?(p)->Bool
 (* json *)      parse(text)->Result[Json] stringify(j) get(j,k)->Option get_string get_int get_bool get_array keys from_string from_int from_bool null array from_map  (* requires: import json *)
 (* int *)       to_string to_hex
 (* env *)       unix_timestamp() args()
+(* math *)      min(a,b) max(a,b) abs(n) pow(base,exp) pi() e() sin(x) cos(x) tan(x) log(x) exp(x) sqrt(x)  (* requires: import math *)
+(* random *)    int(min,max) float() choice(xs)->Option shuffle(xs)  (* requires: import random *)
+(* time *)      now()->Int millis()->Int sleep(ms) year(ts) month(ts) day(ts) hour(ts) minute(ts) second(ts) weekday(ts)->0=Mon to_iso(ts)->String from_parts(y,m,d,h,min,s)->Int  (* requires: import time *)
 (* io *)        println(s)  (* no print, only println *)
 ```
