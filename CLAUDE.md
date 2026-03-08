@@ -81,5 +81,6 @@ effect fn main(args: List[String]) -> Result[Unit, AppError] = {
 (* math *)      min(a,b) max(a,b) abs(n) pow(base,exp) pi() e() sin(x) cos(x) tan(x) log(x) exp(x) sqrt(x)  (* requires: import math *)
 (* random *)    int(min,max) float() choice(xs)->Option shuffle(xs)  (* requires: import random *)
 (* time *)      now()->Int millis()->Int sleep(ms) year(ts) month(ts) day(ts) hour(ts) minute(ts) second(ts) weekday(ts)->0=Mon to_iso(ts)->String from_parts(y,m,d,h,min,s)->Int  (* requires: import time *)
+(* regex *)     match?(pat,s)->Bool full_match?(pat,s)->Bool find(pat,s)->Option find_all(pat,s)->List replace(pat,s,rep) replace_first(pat,s,rep) split(pat,s)->List captures(pat,s)->Option[List]  (* requires: import regex *)
 (* io *)        println(s)  (* no print, only println *)
 ```
