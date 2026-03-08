@@ -126,6 +126,14 @@ do {
 ```
 **There is no `loop` or `while` keyword.** Use `do { ... }` with `guard ... else` for loops.
 
+### Range
+```
+0..5            // [0, 1, 2, 3, 4]  (exclusive end)
+1..=5           // [1, 2, 3, 4, 5]  (inclusive end)
+for i in 0..n { ... }    // optimized: no list allocation
+let xs = list.map(0..10, fn(i) => i * i)   // range as List[Int]
+```
+
 ### Pipe
 ```
 text |> string.trim |> string.split(",")

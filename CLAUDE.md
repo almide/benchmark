@@ -63,6 +63,7 @@ effect fn main(args: List[String]) -> Result[Unit, AppError] = {
 (* Match *)     match x { some(v) => v, none => "" }
 (* For *)       for x in xs { println(x) }
                 for (i, x) in list.enumerate(xs) { ... }   (* tuple destructuring *)
+(* Range *)     for i in 0..10 { ... }   0..5 = [0,1,2,3,4]   1..=5 = [1,2,3,4,5]
 (* Do loop *)   do { guard cond else ok(()) ... }      (* only for dynamic break conditions *)
 (* Guard *)     guard cond else err(msg)               (* early exit *)
 (* Lambda *)    fn(x) => expr
