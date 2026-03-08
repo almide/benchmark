@@ -38,8 +38,8 @@ LANGUAGES = {
   'ocaml'       => { exts: %w[ml mli], version_cmd: 'ocaml --version' },
   'haskell'     => { exts: %w[hs],     version_cmd: 'ghc --version' },
   'almide'      => { exts: %w[almd],   version_cmd: 'almide --version 2>&1 || echo "almide (local)"',
-                     extra_files: %w[CLAUDE.md stdlib.md CHEATSHEET.md build.sh],
-                     extra_prompt: 'Write Almide code. Read CLAUDE.md and stdlib.md for syntax/stdlib reference. ' \
+                     extra_files: %w[CLAUDE.md CHEATSHEET.md stdlib-string.md stdlib-list.md stdlib-map.md stdlib-fs.md stdlib-io.md stdlib-int.md stdlib-json.md stdlib-extra.md build.sh],
+                     extra_prompt: 'Write Almide code. Read CLAUDE.md for syntax overview, then read only the stdlib-xxx.md files you need. ' \
                                    'Write minigit.almd, then bash build.sh && bash test-v1.sh' },
 }
 
