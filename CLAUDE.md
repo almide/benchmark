@@ -16,14 +16,20 @@ fn hash(data: List[Int]) -> String = {
   string.pad_left(int.to_hex(h), 16, "0")     (* int.to_hex handles sign correctly *)
 }
 
-(* --- iterate with for...in, NOT do+guard+var --- *)
+(* --- string.lines for splitting text, list.get_or for safe access --- *)
 effect fn print_lines(path: String) -> Result[Unit, AppError] = {
-  let text = fs.read_text(path)
-  let lines = list.filter(string.split(text, "\n"), fn(l) => string.len(l) > 0)
+  let lines = string.lines(fs.read_text(path))
   for line in lines {
     println(line)
   }
   ok(())
+}
+
+fn parse_pair(line: String) -> List[String] = {
+  let parts = string.split(line, " ")
+  let key = list.get_or(parts, 0, "")
+  let val = list.get_or(parts, 1, "")
+  [key, val]
 }
 
 (* --- use Map for key-value lookups --- *)
@@ -65,8 +71,8 @@ effect fn main(args: List[String]) -> Result[Unit, AppError] = {
 (* Let/Var *)   let x = 1    var y = 2    y = 3
 
 (* fs *)        read_text(p) write(p,s) append(p,s) mkdir_p(p) exists?(p)->Bool
-(* string *)    trim split join len pad_left slice to_bytes contains starts_with? ends_with? replace to_int char_at
-(* list *)      get(i)->Option len sort contains each map filter find fold
+(* string *)    trim split join len lines pad_left slice to_bytes contains starts_with? ends_with? replace to_int char_at
+(* list *)      get(i)->Option get_or(i,default) len sort contains each map filter find fold
 (* map *)       new() get(k)->Option set(k,v) contains(k) remove(k) keys()->List values() len entries from_list(xs,fn)
 (* int *)       to_string to_hex
 (* env *)       unix_timestamp() args()
