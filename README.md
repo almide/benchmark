@@ -127,11 +127,30 @@ For real projects, framework availability matters — and if runtime speed is es
 ```bash
 ruby benchmark.rb                           # Run all languages × 3 trials
 ruby benchmark.rb --lang python --trials 1  # Single language quick test
+ruby benchmark.rb --lang almide --trials 3  # Almide benchmark
 ruby report.rb                              # Generate results/report.md
 python3 plot.py                             # Generate figures/*.png
 ```
 
-Requirements: Ruby, Claude Code CLI (`claude`), and the target language toolchains.
+Requirements: Ruby, [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) (`claude`), and the target language toolchains.
+
+### Almide Setup
+
+To run the Almide benchmark, you need to install the almide compiler first:
+
+```bash
+# Clone and build
+git clone https://github.com/almide/almide.git
+cd almide
+cargo build --release
+
+# Install to PATH (pick one)
+cp target/release/almide ~/.local/bin/        # if ~/.local/bin is in PATH
+# or
+mkdir -p ~/.local/almide && cp target/release/almide ~/.local/almide/  # auto-detected by build.sh
+```
+
+Almide also requires `rustc` (Rust compiler) in PATH — it compiles `.almd` → Rust → native binary internally.
 
 ### Repository Structure
 
