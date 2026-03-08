@@ -42,6 +42,7 @@ list.map(xs,fn(x)=>e)  filter(xs,fn(x)=>b)  fold(xs,init,fn(a,x)=>e)
 int.to_string(n)  int.to_hex(n)
 env.unix_timestamp()->Int
 println(s)  (* no print, only println *)
+(* int, string, list, env are auto-imported — no import needed. Only fs requires: import fs *)
 ```
 
 ## Example
@@ -49,10 +50,6 @@ println(s)  (* no print, only println *)
 ```
 module app
 import fs
-import string
-import list
-import int
-import env
 
 type AppError = | Custom(String) | Io(IoError) deriving From
 
