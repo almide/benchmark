@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 set -e
 
-ALMIDE="${ALMIDE_BIN:-almide}"
+# Find almide binary
+ALMIDE="${ALMIDE_BIN:-}"
+if [ -z "$ALMIDE" ]; then
+  if command -v almide &>/dev/null; then
+    ALMIDE="$(command -v almide)"
+  elif [ -x "$HOME/.local/almide/almide" ]; then
+    ALMIDE="$HOME/.local/almide/almide"
+  else
+    echo "Error: almide not found. Set ALMIDE_BIN or install to PATH." >&2
+    exit 1
+  fi
+fi
 
 # Find the .almd source file
 ALMD_FILE=$(ls *.almd 2>/dev/null | head -1)
@@ -10,8 +21,11 @@ if [ -z "$ALMD_FILE" ]; then
   exit 1
 fi
 
-# Compile: .almd → .rs → minigit
-"$ALMIDE" "$ALMD_FILE" --target rust > minigit.rs
-rustc minigit.rs -o minigit
+# Create wrapper script that uses `almide run`
+cat > minigit <<WRAPPER
+#!/usr/bin/env bash
+DIR="\$(cd "\$(dirname "\$0")" && pwd)"
+"$ALMIDE" run "\$DIR/$ALMD_FILE" "\$@"
+WRAPPER
 chmod +x minigit
-echo "Built minigit from $ALMD_FILE"
+echo "Built minigit from $ALMD_FILE (using almide run)"

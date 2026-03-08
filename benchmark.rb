@@ -39,8 +39,8 @@ LANGUAGES = {
   'haskell'     => { exts: %w[hs],     version_cmd: 'ghc --version' },
   'almide'      => { exts: %w[almd],   version_cmd: 'almide --version 2>&1 || echo "almide (local)"',
                      extra_files: %w[CLAUDE.md build.sh],
-                     extra_prompt: 'Write code in Almide (.almd). CLAUDE.md contains the full language reference and build instructions. ' \
-                                   'Write a single file minigit.almd, then run: bash build.sh' },
+                     extra_prompt: 'Write Almide code. Read CLAUDE.md first for syntax/stdlib reference. ' \
+                                   'Write minigit.almd, then bash build.sh && bash test-v1.sh' },
 }
 
 TRIALS = 3
