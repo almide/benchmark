@@ -1,0 +1,189 @@
+MiniConf Specification
+Version: 1.0
+Command name: miniconf
+External libraries: NOT allowed
+Standard library: Allowed
+
+========================================
+1. Overview
+========================================
+
+MiniConf is a configuration file parser, validator, and query tool.
+
+The executable must be called:
+
+    miniconf
+
+All commands operate on config/schema files passed as arguments.
+
+----------------------------------------
+
+Supported commands (v1):
+
+    miniconf check <config_file>
+    miniconf get <config_file> <section>.<key>
+    miniconf validate <config_file> --schema <schema_file>
+
+========================================
+2. Config File Format
+========================================
+
+Example:
+
+    # Database settings
+    [database]
+    host = "localhost"
+    port = 5432
+    debug = false
+    tags = ["primary", "fast"]
+
+    [cache]
+    enabled = true
+    ttl = 300
+
+Rules:
+- Lines starting with # are comments (ignored)
+- Empty lines are ignored
+- [name] starts a new section (name: letters, digits, underscore)
+- key = value defines a key-value pair inside a section
+- Keys: letters, digits, underscore (no spaces)
+- Whitespace around = is trimmed
+
+Value types:
+- String: double-quoted, supports \" and \\ escapes
+  Examples: "hello", "say \"hi\"", "path\\to"
+- Int: optional minus sign followed by digits
+  Examples: 42, -1, 0
+- Bool: true or false (lowercase only)
+- List: comma-separated double-quoted strings in brackets
+  Examples: ["a", "b"], ["one"]
+  Empty list: []
+
+========================================
+3. Schema File Format
+========================================
+
+Example:
+
+    [database]
+    host: string, required
+    port: int, required
+    debug: bool, optional
+    tags: list, required
+
+    [cache]
+    enabled: bool, optional
+    ttl: int, optional
+
+Rules:
+- Same section header syntax as config
+- Each line: key: type, required/optional
+- Types: string, int, bool, list
+- No comments in schema files
+
+========================================
+4. Command Specifications
+========================================
+
+----------------------------------------
+4.1 check <config_file>
+----------------------------------------
+
+Parse the config file and check for syntax errors.
+
+If valid:
+    print "OK"
+    exit 0
+
+If file not found:
+    print "ERROR: file not found: <path>"
+    exit 1
+
+If syntax error (report FIRST error only):
+    print "ERROR: line <N>: <description>"
+    exit 1
+
+Error descriptions (exact strings):
+- "unterminated string"
+  A string value starts with " but no closing " on same line
+- "invalid value"
+  Value is not a valid string, int, bool, or list
+- "expected section header"
+  A key = value line appears before any section
+- "invalid section header"
+  A line starts with [ but is not a valid section (e.g., [], [123], unclosed)
+- "duplicate key"
+  Same key appears twice in the same section
+
+Line numbers start at 1 and count all lines (including comments and blanks).
+
+----------------------------------------
+4.2 get <config_file> <section>.<key>
+----------------------------------------
+
+Parse the config file and retrieve a value.
+
+Output format (exact):
+- String: "value"       (with surrounding double quotes)
+- Int:    42            (no quotes)
+- Bool:   true          (no quotes)
+- List:   ["a", "b"]   (with quotes around each element)
+
+Errors:
+- File not found:
+    print "ERROR: file not found: <path>"
+    exit 1
+- Parse error:
+    print "ERROR: line <N>: <description>"
+    exit 1
+- Section not found:
+    print "ERROR: section not found: <name>"
+    exit 1
+- Key not found:
+    print "ERROR: key not found: <section>.<key>"
+    exit 1
+
+----------------------------------------
+4.3 validate <config_file> --schema <schema_file>
+----------------------------------------
+
+Parse the config file and validate it against the schema.
+
+If all valid:
+    print "OK"
+    exit 0
+
+If errors exist:
+    print each error (one per line), then exit 1
+
+Error format:
+    ERROR: [<section>] <key>: <message>
+
+Messages (exact strings):
+- "required field missing"
+  A required field in the schema is not present in the config.
+- "expected <expected>, got <actual>"
+  The value type doesn't match. Types in messages: string, int, bool, list
+  Example: "expected int, got string"
+
+Rules:
+- Check ALL sections and keys defined in the schema
+- Report errors sorted by: section name, then key name (lexicographic)
+- If the config has extra sections or keys NOT in the schema, ignore them (no error)
+- If a config file has a parse error, report the parse error instead (same as check)
+- If the schema file is not found:
+    print "ERROR: file not found: <path>"
+    exit 1
+
+========================================
+5. Determinism Rules
+========================================
+
+- No extra whitespace in output
+- No debug output
+- Exact string matching required
+- Error messages must match exactly
+
+========================================
+END
+========================================

@@ -1,0 +1,245 @@
+MiniConf Specification
+Version: 2.0
+Command name: miniconf
+External libraries: NOT allowed
+Standard library: Allowed
+
+========================================
+1. Overview
+========================================
+
+MiniConf is a configuration file parser, validator, and manipulation tool.
+
+The executable must be called:
+
+    miniconf
+
+All commands operate on config/schema files passed as arguments.
+
+----------------------------------------
+
+Supported commands:
+
+    miniconf check <config_file>
+    miniconf get <config_file> <section>.<key>
+    miniconf validate <config_file> --schema <schema_file>
+    miniconf set <config_file> <section>.<key> <value>
+    miniconf merge <file1> <file2>
+    miniconf diff <file1> <file2>
+
+========================================
+2. Config File Format
+========================================
+
+(Same as v1)
+
+Example:
+
+    # Database settings
+    [database]
+    host = "localhost"
+    port = 5432
+    debug = false
+    tags = ["primary", "fast"]
+
+Rules:
+- Lines starting with # are comments (ignored)
+- Empty lines are ignored
+- [name] starts a new section (name: letters, digits, underscore)
+- key = value defines a key-value pair inside a section
+- Keys: letters, digits, underscore
+- Whitespace around = is trimmed
+
+Value types:
+- String: double-quoted, supports \" and \\ escapes
+- Int: optional minus sign followed by digits
+- Bool: true or false (lowercase only)
+- List: comma-separated double-quoted strings in brackets
+
+========================================
+3. Schema File Format (Extended)
+========================================
+
+Example:
+
+    [database]
+    host: string, required
+    port: int, required, min=1, max=65535
+    debug: bool, optional
+    tags: list, required, min_len=1, max_len=10
+
+Rules:
+- Same section header syntax as config
+- Each line: key: type, required/optional [, constraints...]
+- Types: string, int, bool, list
+- Constraints (optional, only for specified types):
+    - min=N        (int only) minimum value inclusive
+    - max=N        (int only) maximum value inclusive
+    - min_len=N    (list only) minimum number of elements
+    - max_len=N    (list only) maximum number of elements
+
+========================================
+4. Command Specifications
+========================================
+
+----------------------------------------
+4.1 check <config_file>
+----------------------------------------
+
+(Same as v1)
+
+Parse the config file and check for syntax errors.
+
+If valid: print "OK", exit 0
+If file not found: print "ERROR: file not found: <path>", exit 1
+If syntax error (first error only):
+    print "ERROR: line <N>: <description>", exit 1
+
+Error descriptions:
+- "unterminated string"
+- "invalid value"
+- "expected section header"
+- "invalid section header"
+- "duplicate key"
+
+----------------------------------------
+4.2 get <config_file> <section>.<key>
+----------------------------------------
+
+(Same as v1)
+
+Output format:
+- String: "value"
+- Int: 42
+- Bool: true
+- List: ["a", "b"]
+
+Errors:
+- "ERROR: file not found: <path>"
+- "ERROR: line <N>: <description>"
+- "ERROR: section not found: <name>"
+- "ERROR: key not found: <section>.<key>"
+
+----------------------------------------
+4.3 validate <config_file> --schema <schema_file>
+----------------------------------------
+
+Parse the config and validate against schema with extended constraints.
+
+If all valid: print "OK", exit 0
+If errors: print each error, exit 1
+
+Error format:
+    ERROR: [<section>] <key>: <message>
+
+Messages:
+- "required field missing"
+- "expected <expected>, got <actual>"
+- "value <N> out of range (<min>..<max>)"
+  For int values violating min/max constraints.
+- "list length <N> below minimum <min>"
+  For lists shorter than min_len.
+- "list length <N> above maximum <max>"
+  For lists longer than max_len.
+
+Rules:
+- Report errors sorted by section name, then key name
+- Extra sections/keys in config are ignored
+- Parse errors reported first (same as check)
+
+----------------------------------------
+4.4 set <config_file> <section>.<key> <value>
+----------------------------------------
+
+Read the config, set the specified key to the value, and print the
+modified config to stdout.
+
+The value argument is in the same format as config file values:
+- Strings: "hello"  (with quotes on command line)
+- Ints: 42
+- Bools: true / false
+- Lists: ["a","b"]  (with quotes)
+
+Behavior:
+- If the section exists and key exists: replace the value
+- If the section exists but key doesn't: add the key at end of section
+- If the section doesn't exist: add new section with the key at end of file
+
+Output: the full modified config printed to stdout.
+- Preserve comments and blank lines from the original file
+- Preserve existing formatting of untouched lines
+
+Errors:
+- File not found: print "ERROR: file not found: <path>", exit 1
+- Parse error: print "ERROR: line <N>: <description>", exit 1
+
+----------------------------------------
+4.5 merge <file1> <file2>
+----------------------------------------
+
+Merge two config files. file2 values override file1.
+
+Rules:
+- Start with all sections and keys from file1
+- For each section in file2:
+  - If section exists in file1: override/add keys
+  - If section doesn't exist: add entire section
+- Output merged config to stdout
+
+Output format (normalized, no comments):
+    [section1]
+    key1 = value1
+    key2 = value2
+
+    [section2]
+    key3 = value3
+
+- Sections sorted alphabetically
+- Keys within each section sorted alphabetically
+- One blank line between sections
+- Values in their original format (strings quoted, etc.)
+
+Errors:
+- File not found: print "ERROR: file not found: <path>", exit 1
+- Parse error: print "ERROR: line <N>: <description>", exit 1
+
+----------------------------------------
+4.6 diff <file1> <file2>
+----------------------------------------
+
+Show differences between two config files.
+
+Output format (one line per difference):
+- Added key:    "Added: [<section>] <key> = <value>"
+- Removed key:  "Removed: [<section>] <key> = <value>"
+- Modified key: "Modified: [<section>] <key>: <old> -> <new>"
+
+Rules:
+- Compare by section and key
+- Output sorted by section name, then key name
+- Added = in file2 but not file1
+- Removed = in file1 but not file2
+- Modified = same section.key but different values
+- If no differences: print "No differences", exit 0
+
+Value display in diff output:
+- String: "value" (with quotes)
+- Int: 42
+- Bool: true
+- List: ["a", "b"]
+
+Errors:
+- File not found: print "ERROR: file not found: <path>", exit 1
+- Parse error: print "ERROR: line <N>: <description>", exit 1
+
+========================================
+5. Determinism Rules
+========================================
+
+- No extra whitespace in output
+- No debug output
+- Exact string matching required
+
+========================================
+END
+========================================
