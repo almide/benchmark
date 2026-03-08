@@ -1,10 +1,8 @@
 {
-  "date": "2026-03-08 11:15:45",
+  "date": "2026-03-08 14:12:53",
   "claude_version": "2.1.71 (Claude Code)",
-  "trials": 3,
+  "trials": 1,
   "versions": {
-    "almide": "Usage: almide run <file.almd> [args...]",
-    "python": "Python 3.11.13",
-    "go": "go version go1.25.0 darwin/amd64"
+    "almide": "almide 0.1.0"
   }
 }

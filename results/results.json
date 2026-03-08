@@ -11122,5 +11122,113 @@
       "num_turns": 14,
       "duration_ms": 57620
     }
+  },
+  {
+    "language": "almide",
+    "trial": 1,
+    "v1_dir": "/Users/o6lvl4/workspace/github.com/almide/benchmark/generated/minigit-almide-1-v1",
+    "v2_dir": "/Users/o6lvl4/workspace/github.com/almide/benchmark/generated/minigit-almide-1-v2",
+    "v1_time": 334.3,
+    "v1_pass": true,
+    "v1_passed_count": 11,
+    "v1_failed_count": 0,
+    "v1_total_count": 11,
+    "v1_loc": 114,
+    "v2_time": 155.8,
+    "v2_pass": true,
+    "v2_passed_count": 30,
+    "v2_failed_count": 0,
+    "v2_total_count": 30,
+    "v2_loc": 279,
+    "v1_claude": {
+      "input_tokens": 8,
+      "output_tokens": 16880,
+      "cache_creation_tokens": 30455,
+      "cache_read_tokens": 160254,
+      "cost_usd": 0.69251075,
+      "num_turns": 8,
+      "duration_ms": 332747
+    },
+    "v2_claude": {
+      "input_tokens": 8,
+      "output_tokens": 4610,
+      "cache_creation_tokens": 23066,
+      "cache_read_tokens": 145792,
+      "cost_usd": 0.33234849999999994,
+      "num_turns": 8,
+      "duration_ms": 154254
+    }
+  },
+  {
+    "language": "almide",
+    "trial": 1,
+    "v1_dir": "/Users/o6lvl4/workspace/github.com/almide/benchmark/generated/minigit-almide-1-v1",
+    "v2_dir": "/Users/o6lvl4/workspace/github.com/almide/benchmark/generated/minigit-almide-1-v2",
+    "v1_time": 249.9,
+    "v1_pass": true,
+    "v1_passed_count": 11,
+    "v1_failed_count": 0,
+    "v1_total_count": 11,
+    "v1_loc": 130,
+    "v2_time": 218.2,
+    "v2_pass": true,
+    "v2_passed_count": 30,
+    "v2_failed_count": 0,
+    "v2_total_count": 30,
+    "v2_loc": 326,
+    "v1_claude": {
+      "input_tokens": 10,
+      "output_tokens": 13633,
+      "cache_creation_tokens": 18839,
+      "cache_read_tokens": 232315,
+      "cost_usd": 0.57477625,
+      "num_turns": 10,
+      "duration_ms": 248519
+    },
+    "v2_claude": {
+      "input_tokens": 14,
+      "output_tokens": 6220,
+      "cache_creation_tokens": 15464,
+      "cache_read_tokens": 371863,
+      "cost_usd": 0.43815149999999997,
+      "num_turns": 16,
+      "duration_ms": 216721
+    }
+  },
+  {
+    "language": "almide",
+    "trial": 1,
+    "v1_dir": "/Users/o6lvl4/workspace/github.com/almide/benchmark/generated/minigit-almide-1-v1",
+    "v2_dir": "/Users/o6lvl4/workspace/github.com/almide/benchmark/generated/minigit-almide-1-v2",
+    "v1_time": 219.2,
+    "v1_pass": true,
+    "v1_passed_count": 11,
+    "v1_failed_count": 0,
+    "v1_total_count": 11,
+    "v1_loc": 125,
+    "v2_time": 90.6,
+    "v2_pass": true,
+    "v2_passed_count": 30,
+    "v2_failed_count": 0,
+    "v2_total_count": 30,
+    "v2_loc": 335,
+    "v1_claude": {
+      "input_tokens": 10,
+      "output_tokens": 13416,
+      "cache_creation_tokens": 26257,
+      "cache_read_tokens": 222823,
+      "cost_usd": 0.61096775,
+      "num_turns": 10,
+      "duration_ms": 217848
+    },
+    "v2_claude": {
+      "input_tokens": 10,
+      "output_tokens": 5491,
+      "cache_creation_tokens": 26786,
+      "cache_read_tokens": 221187,
+      "cost_usd": 0.415331,
+      "num_turns": 11,
+      "duration_ms": 86990
+    }
   }
 ]
