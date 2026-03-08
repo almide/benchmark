@@ -12,7 +12,8 @@ type_decl   = "type" IDENT "=" "|" variant ("|" variant)* "deriving" "From"
 variant     = IDENT "(" type ("," type)* ")"
 fn_decl     = ["effect"] "fn" IDENT "(" params ")" "->" type "=" expr
 type        = "Int" | "String" | "Bool" | "Unit" | IDENT | IDENT "[" type ("," type)* "]"
-expr        = block | if_expr | match_expr | do_expr | guard | let | var | assign | binary | call | literal
+expr        = block | if_expr | match_expr | for_in | do_expr | guard | let | var | assign | binary | call | literal
+for_in      = "for" IDENT "in" expr "{" stmt* "}"  (* iterate list; prefer over do+guard *)
 block       = "{" stmt* expr "}"
 if_expr     = "if" expr "then" expr "else" expr       (* else is MANDATORY *)
 match_expr  = "match" expr "{" arm ("," arm)* "}"
@@ -39,10 +40,14 @@ string.trim(s) split(s,d)->List join(xs,d) len(s)->Int pad_left(s,w,c) slice(s,s
 string.contains(s,sub)->Bool starts_with?(s,p)->Bool ends_with?(s,p)->Bool replace(s,from,to)
 list.get(xs,i)->Option  len(xs)->Int  sort(xs)  contains(xs,v)->Bool
 list.map(xs,fn(x)=>e)  filter(xs,fn(x)=>b)  fold(xs,init,fn(a,x)=>e)
+map.new()->Map  get(m,k)->Option  set(m,k,v)->Map  contains(m,k)->Bool
+map.remove(m,k)->Map  keys(m)->List  values(m)->List  len(m)->Int  entries(m)->List  from_list(xs,fn)
 int.to_string(n)  int.to_hex(n)
 env.unix_timestamp()->Int
 println(s)  (* no print, only println *)
-(* int, string, list, env are auto-imported — no import needed. Only fs requires: import fs *)
+(* int, string, list, map, env are auto-imported — no import needed. Only fs requires: import fs *)
+(* Use for...in for iteration: for x in xs { println(x) } *)
+(* Use map for key-value data: let m = map.set(map.new(), "key", "val") *)
 ```
 
 ## Example
