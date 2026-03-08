@@ -21,11 +21,7 @@ if [ -z "$ALMD_FILE" ]; then
   exit 1
 fi
 
-# Create wrapper script that uses `almide run`
-cat > minigit <<WRAPPER
-#!/usr/bin/env bash
-DIR="\$(cd "\$(dirname "\$0")" && pwd)"
-"$ALMIDE" run "\$DIR/$ALMD_FILE" "\$@"
-WRAPPER
+# Build native binary
+"$ALMIDE" build "$ALMD_FILE" -o minigit
 chmod +x minigit
-echo "Built minigit from $ALMD_FILE (using almide run)"
+echo "Built minigit from $ALMD_FILE (native binary)"
