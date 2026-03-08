@@ -155,6 +155,19 @@ create_user("alice", age: 30)          // mixed positional + named
 "hello ${name}, result=${1 + 1}"
 ```
 
+### Raw string (no escape processing)
+```
+r"\d+"          // equivalent to "\\d+"
+r"C:\path\to"   // backslashes preserved as-is
+```
+
+### Tuple
+```
+(1, "hello")
+(a, b, c)
+for (i, x) in list.enumerate(xs) { ... }   // destructuring in for
+```
+
 ## Statements
 
 ### let / var
@@ -248,22 +261,10 @@ The runtime calls `main(args)` where `args` includes the program name at index 0
 ## UFCS
 `f(x, y)` ≡ `x.f(y)` — compiler resolves automatically.
 
-## Standard library modules
+## Standard library modules — see [stdlib.md](./stdlib.md) for full reference
 
-### fs (filesystem)
-`fs.read_text(path)`, `fs.read_bytes(path)`, `fs.write(path, content)`, `fs.write_bytes(path, bytes)`, `fs.append(path, content)`, `fs.mkdir_p(path)`, `fs.exists?(path)` → Bool (no `try` needed)
-
-### string
-`string.trim(s)`, `string.split(s, sep)`, `string.join(list, sep)`, `string.len(s)`, `string.pad_left(s, n, ch)`, `string.starts_with?(s, prefix)`, `string.ends_with?(s, suffix)`, `string.slice(s, start)`, `string.slice(s, start, end)`, `string.to_bytes(s)`, `string.contains(s, sub)`, `string.to_upper(s)`, `string.to_lower(s)`, `string.to_int(s)` → `Result[Int, String]`, `string.replace(s, from, to)`, `string.char_at(s, i)` → `Option[String]`
-
-### list
-`list.len(xs)`, `list.get(xs, i)` → `Option[T]`, `list.sort(xs)`, `list.contains(xs, x)`, `list.each(xs, f)`, `list.map(xs, f)`, `list.filter(xs, f)`, `list.find(xs, f)`, `list.fold(xs, init, f)`
-
-### int
-`int.to_string(n)` — Int to decimal String, `int.to_hex(n)` — Int to hex String
-
-### env
-`env.unix_timestamp()` → Int, `env.args()` → `List[String]`
+Auto-imported: `string`, `list`, `map`, `int`, `float`, `fs`, `path`, `env`, `process`
+Import required: `json`, `math`, `random`, `time`, `regex`
 
 ## Key rules
 - Newline = statement separator (no semicolons needed)
