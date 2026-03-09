@@ -40,7 +40,12 @@ async fn name(x: Type) -> Result[T, E] = expr        // async (implies effect)
 async effect fn name(x: Type) -> Result[T, E] = expr // explicit async+effect
 ```
 
-### Modifiers (order matters): `pub? async? effect? fn`
+### Visibility (optional prefix before fn/type)
+- `fn f()` — public (default)
+- `mod fn f()` — same project only (`pub(crate)` in Rust)
+- `local fn f()` — this file only (private)
+
+### Modifiers (order matters): `[local|mod]? async? effect? fn`
 
 ### Predicate: `fn empty?(xs: List[T]) -> Bool` (? suffix = Bool return only)
 
@@ -108,9 +113,30 @@ items.map(fn(x) => x + 1)
 }
 ```
 
+### For...in loop
+```
+for x in xs {
+  println(x)
+}
+
+for key in map.keys(config) {
+  let val = match map.get(config, key) { some(v) => v, none => "" }
+  println(key ++ " = " ++ val)
+}
+```
+**Prefer `for...in` over `do { guard ... }` for iterating lists.**
+
+### Range
+```
+0..5            // [0, 1, 2, 3, 4]  (exclusive end)
+1..=5           // [1, 2, 3, 4, 5]  (inclusive end)
+for i in 0..n { ... }    // optimized: no list allocation
+let xs = list.map(0..10, fn(i) => i * i)   // range as List[Int]
+```
+
 ### Do block (loop + auto-propagation)
 ```
-// As loop: use guard to break
+// As loop with dynamic condition: use guard to break
 do {
   guard current != "NONE" else ok(())   // break condition
   let data = fs.read_text(path)
@@ -124,15 +150,7 @@ do {
   decode(raw)                       // last expr is the result
 }
 ```
-**There is no `loop` or `while` keyword.** Use `do { ... }` with `guard ... else` for loops.
-
-### Range
-```
-0..5            // [0, 1, 2, 3, 4]  (exclusive end)
-1..=5           // [1, 2, 3, 4, 5]  (inclusive end)
-for i in 0..n { ... }    // optimized: no list allocation
-let xs = list.map(0..10, fn(i) => i * i)   // range as List[Int]
-```
+**Use `for...in` for simple iteration. Use `do { guard ... }` only when you need dynamic break conditions (e.g., linked-list traversal).**
 
 ### Pipe
 ```
@@ -161,6 +179,17 @@ create_user("alice", age: 30)          // mixed positional + named
 ### String interpolation
 ```
 "hello ${name}, result=${1 + 1}"
+```
+
+### Heredoc (multi-line strings)
+```
+let sql = """
+  SELECT *
+  FROM users
+"""
+// Leading whitespace stripped based on minimum indent
+// Interpolation ${expr} works the same
+// Raw heredoc: r"""...""" (no escapes)
 ```
 
 ### Raw string (no escape processing)
@@ -271,8 +300,8 @@ The runtime calls `main(args)` where `args` includes the program name at index 0
 
 ## Standard library modules — see [stdlib.md](./stdlib.md) for full reference
 
-Auto-imported: `string`, `list`, `map`, `int`, `float`, `fs`, `path`, `env`, `process`
-Import required: `json`, `math`, `random`, `time`, `regex`
+Auto-imported: `string`, `list`, `map`, `int`, `float`, `fs`, `path`, `env`, `process`, `io`
+Import required: `json`, `math`, `random`, `time`, `regex`, `encoding`, `args`
 
 ## Key rules
 - Newline = statement separator (no semicolons needed)
@@ -284,9 +313,19 @@ Import required: `json`, `math`, `random`, `time`, `regex`
 - No null — use `Option[T]`
 - No inheritance — use trait + impl
 - No macros, no operator overloading, no implicit conversions
-- Empty list = `[]` (no `list.new()` or `list.empty()`)
+- Empty list = `[]` (no `list.new()` or `list.empty()`), empty map = `map.new()`
 - `_` is ONLY for match wildcard patterns, never as a variable name
 - The stdlib functions listed above are exhaustive — no other functions exist
+- Use `for x in xs { ... }` for iteration, NOT `do { var i = 0; guard ... }`
+
+## Common mistakes (DO NOT)
+- `list[1, 2, 3]` → **WRONG**. Write `[1, 2, 3]`. `list` is a module, not a type constructor
+- `each(xs, f)` → **WRONG**. Write `list.each(xs, f)`. All stdlib functions need module prefix
+- `map[K, V]` as a value → **WRONG**. Write `map.new()` to create an empty map
+- `List.new()` → **WRONG**. Write `[]`. There is no `new()` for List
+- `string.length(s)` → **WRONG**. Write `string.len(s)`. No synonyms
+- `println(x)` where x is Int → **WRONG**. Write `println(int.to_string(x))`. No implicit conversion
+- `fn foo[T](x: T)` → **WRONG**. User-defined generic functions are not supported. Use concrete types
 
 ## Complete example
 ```
@@ -309,17 +348,10 @@ effect fn greet(name: String) -> Result[Unit, AppError] = {
 }
 
 effect fn process_all(items: List[String]) -> Result[Unit, AppError] = {
-  var remaining = list.len(items)
-  do {
-    guard remaining > 0 else ok(())
-    let idx = list.len(items) - remaining
-    let item = match list.get(items, idx) {
-      some(v) => v,
-      none => "",
-    }
+  for item in items {
     println("Processing: ${item}")
-    remaining = remaining - 1
   }
+  ok(())
 }
 
 effect fn main(args: List[String]) -> Result[Unit, AppError] = {

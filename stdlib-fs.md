@@ -8,6 +8,10 @@ fs.write_bytes(path, bytes) -> Result[Unit, IoError]
 fs.append(path, content) -> Result[Unit, IoError]
 fs.mkdir_p(path) -> Result[Unit, IoError]
 fs.exists?(path) -> Bool
+fs.is_dir?(path) -> Bool
+fs.is_file?(path) -> Bool
 fs.remove(path) -> Result[Unit, IoError]
 fs.list_dir(path) -> Result[List[String], IoError]
+fs.copy(src, dst) -> Result[Unit, IoError]
+fs.rename(src, dst) -> Result[Unit, IoError]
 ```

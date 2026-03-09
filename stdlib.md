@@ -7,11 +7,14 @@ These are available without `import`.
 ### string
 ```
 string.trim(s) -> String
+string.trim_start(s) -> String
+string.trim_end(s) -> String
 string.split(s, sep) -> List[String]
 string.join(list, sep) -> String
 string.len(s) -> Int
 string.lines(s) -> List[String]
 string.pad_left(s, n, ch) -> String
+string.pad_right(s, n, ch) -> String
 string.slice(s, start) -> String
 string.slice(s, start, end) -> String
 string.contains(s, sub) -> Bool
@@ -27,10 +30,15 @@ string.char_at(s, i) -> Option[String]
 string.chars(s) -> List[String]
 string.index_of(s, needle) -> Option[Int]
 string.repeat(s, n) -> String
+string.count(s, sub) -> Int
+string.reverse(s) -> String
+string.is_empty?(s) -> Bool
 string.is_digit?(s) -> Bool
 string.is_alpha?(s) -> Bool
 string.is_alphanumeric?(s) -> Bool
 string.is_whitespace?(s) -> Bool
+string.strip_prefix(s, prefix) -> Option[String]
+string.strip_suffix(s, suffix) -> Option[String]
 ```
 All support UFCS: `s.trim()`, `s.chars()`, `s.is_digit?()`, etc.
 
@@ -39,14 +47,18 @@ All support UFCS: `s.trim()`, `s.chars()`, `s.is_digit?()`, etc.
 list.len(xs) -> Int
 list.get(xs, i) -> Option[T]
 list.get_or(xs, i, default) -> T
+list.first(xs) -> Option[T]
+list.last(xs) -> Option[T]
 list.sort(xs) -> List[T]
 list.sort_by(xs, fn(x) => key) -> List[T]
 list.reverse(xs) -> List[T]
 list.contains(xs, x) -> Bool
+list.index_of(xs, x) -> Option[Int]
 list.any(xs, fn(x) => Bool) -> Bool
 list.all(xs, fn(x) => Bool) -> Bool
 list.each(xs, fn(x) => Unit) -> Unit
 list.map(xs, fn(x) => y) -> List[U]
+list.flat_map(xs, fn(x) => List[U]) -> List[U]
 list.filter(xs, fn(x) => Bool) -> List[T]
 list.find(xs, fn(x) => Bool) -> Option[T]
 list.fold(xs, init, fn(acc, x) => acc) -> U
@@ -55,7 +67,14 @@ list.zip(a, b) -> List[(T, U)]
 list.flatten(xss) -> List[T]
 list.take(xs, n) -> List[T]
 list.drop(xs, n) -> List[T]
+list.chunk(xs, n) -> List[List[T]]
 list.unique(xs) -> List[T]
+list.join(xs, sep) -> String
+list.sum(xs) -> Int
+list.product(xs) -> Int
+list.min(xs) -> Option[T]
+list.max(xs) -> Option[T]
+list.is_empty?(xs) -> Bool
 ```
 All support UFCS: `xs.map(fn(x) => ...)`, `xs.len()`, etc.
 
@@ -67,19 +86,44 @@ map.get_or(m, k, default) -> V
 map.set(m, k, v) -> Map[K, V]          (* returns new map *)
 map.contains(m, k) -> Bool
 map.remove(m, k) -> Map[K, V]
+map.merge(a, b) -> Map[K, V]           (* combine two maps, b overrides a *)
 map.keys(m) -> List[K]                  (* sorted *)
 map.values(m) -> List[V]
 map.len(m) -> Int
 map.entries(m) -> List[(K, V)]
 map.from_list(xs, fn(x) => (k, v)) -> Map[K, V]
+map.is_empty?(m) -> Bool
 ```
 
 ### int / float
 ```
 int.to_string(n) -> String
 int.to_hex(n) -> String
+int.parse(s) -> Result[Int, String]
+int.parse_hex(s) -> Result[Int, String]
+int.abs(n) -> Int
+int.min(a, b) -> Int
+int.max(a, b) -> Int
+
+(* bitwise *)
+int.band(a, b) -> Int
+int.bor(a, b) -> Int
+int.bxor(a, b) -> Int
+int.bshl(a, n) -> Int
+int.bshr(a, n) -> Int
+int.bnot(a) -> Int
+
+(* wrapping arithmetic — for hash algorithms on fixed-width integers *)
+int.wrap_add(a, b, bits) -> Int
+int.wrap_mul(a, b, bits) -> Int
+int.rotate_right(a, n, bits) -> Int
+int.rotate_left(a, n, bits) -> Int
+int.to_u32(a) -> Int
+int.to_u8(a) -> Int
+
 float.to_string(n) -> String
 float.to_int(n) -> Int
+float.from_int(n) -> Float
 float.round(n) -> Float
 float.floor(n) -> Float
 float.ceil(n) -> Float
@@ -98,8 +142,12 @@ fs.write_bytes(path, bytes) -> Result[Unit, IoError]
 fs.append(path, content) -> Result[Unit, IoError]
 fs.mkdir_p(path) -> Result[Unit, IoError]
 fs.exists?(path) -> Bool
+fs.is_dir?(path) -> Bool
+fs.is_file?(path) -> Bool
 fs.remove(path) -> Result[Unit, IoError]
 fs.list_dir(path) -> Result[List[String], IoError]
+fs.copy(src, dst) -> Result[Unit, IoError]
+fs.rename(src, dst) -> Result[Unit, IoError]
 ```
 
 ### path
@@ -114,17 +162,27 @@ path.is_absolute?(p) -> Bool
 ### env — effect functions
 ```
 env.unix_timestamp() -> Int
+env.millis() -> Int
 env.args() -> List[String]
 env.get(name) -> Option[String]
 env.set(name, value) -> Unit
 env.cwd() -> Result[String, String]
+env.sleep_ms(ms) -> Unit
 ```
 
 ### process — effect functions
 ```
 process.exec(cmd, args) -> Result[String, String]
+process.exec_status(cmd, args) -> Result[{code: Int, stdout: String, stderr: String}, String]
 process.exit(code) -> Unit
 process.stdin_lines() -> Result[List[String], String]
+```
+
+### io — effect functions
+```
+io.read_line() -> String              (* read one line from stdin, blocking *)
+io.print(s) -> Unit                   (* print without newline *)
+io.read_all() -> String               (* read all of stdin *)
 ```
 
 ## Import-required modules
@@ -216,6 +274,26 @@ regex.captures(pat, s) -> Option[List[String]]  (* capture groups only *)
 Pattern syntax: `.` `*` `+` `?` `[abc]` `[^abc]` `[a-z]` `\d` `\w` `\s` `\D` `\W` `\S` `^` `$` `|` `()` `\\`
 
 Use raw strings to avoid double-escaping: `r"\d+"` instead of `"\\d+"`.
+
+### encoding
+```
+import encoding
+
+encoding.hex_encode(bytes) -> String
+encoding.hex_decode(s) -> Result[List[Int], String]
+encoding.base64_encode(bytes) -> String
+encoding.base64_decode(s) -> Result[List[Int], String]
+```
+
+### args
+```
+import args
+
+args.flag?(name) -> Bool
+args.option(name) -> Option[String]
+args.option_or(name, fallback) -> String
+args.positional() -> List[String]
+```
 
 ## Built-in functions (no module prefix)
 ```

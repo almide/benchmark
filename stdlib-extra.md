@@ -1,4 +1,4 @@
-# math, random, time, regex (import required)
+# math, random, time, regex, encoding, args (import required)
 
 ## math
 ```
@@ -52,3 +52,23 @@ regex.captures(pat, s) -> Option[List[String]]
 ```
 Pattern syntax: `.` `*` `+` `?` `[abc]` `[^abc]` `[a-z]` `\d` `\w` `\s` `^` `$` `|` `()`
 Use raw strings: `r"\d+"` instead of `"\\d+"`
+
+## encoding
+```
+import encoding
+
+encoding.hex_encode(bytes) -> String
+encoding.hex_decode(s) -> Result[List[Int], String]
+encoding.base64_encode(bytes) -> String
+encoding.base64_decode(s) -> Result[List[Int], String]
+```
+
+## args
+```
+import args
+
+args.flag?(name) -> Bool
+args.option(name) -> Option[String]
+args.option_or(name, fallback) -> String
+args.positional() -> List[String]
+```
