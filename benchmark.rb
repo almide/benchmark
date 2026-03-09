@@ -38,9 +38,13 @@ LANGUAGES = {
   'ocaml'       => { exts: %w[ml mli], version_cmd: 'ocaml --version' },
   'haskell'     => { exts: %w[hs],     version_cmd: 'ghc --version' },
   'almide'      => { exts: %w[almd],   version_cmd: 'almide --version 2>&1 || echo "almide (local)"',
-                     extra_files: %w[CLAUDE.md CHEATSHEET.md stdlib-string.md stdlib-list.md stdlib-map.md stdlib-fs.md stdlib-io.md stdlib-int.md stdlib-json.md stdlib-extra.md build.sh],
-                     extra_prompt: 'Write Almide code. Read CLAUDE.md for syntax overview, then read only the stdlib-xxx.md files you need. ' \
-                                   'Write minigit.almd, then bash build.sh && bash test-v1.sh' },
+                     extra_files: %w[CLAUDE.md build.sh],
+                     extra_prompt: 'Write Almide code. CLAUDE.md has the complete language reference and all stdlib signatures. ' \
+                                   'Write minigit.almd, then bash build.sh && bash test-v1.sh',
+                     warmup_prompt: 'Read CLAUDE.md to learn Almide syntax. Then write a small warmup program warmup.almd ' \
+                                    'that reads a file given as a CLI argument and prints its line count. ' \
+                                    'Build it with: bash build.sh. Fix any errors until it compiles. ' \
+                                    'Then delete warmup.almd.' },
 }
 
 TRIALS = 3
@@ -166,15 +170,17 @@ def parse_claude_output(raw_output)
     cost_usd: result_event['total_cost_usd'] || 0.0,
     num_turns: result_event['num_turns'] || 0,
     duration_ms: result_event['duration_ms'] || 0,
+    session_id: result_event['session_id'],
   }
 rescue JSON::ParserError => e
   puts "  WARNING: Failed to parse Claude JSON output: #{e.message}"
   nil
 end
 
-def run_claude(prompt, dir:, log_path: nil)
+def run_claude(prompt, dir:, log_path: nil, resume_session: nil)
   env_prefix = "unset CLAUDECODE && export PATH=#{extra_path}:$PATH && "
-  cmd = "#{env_prefix}claude -p #{Shellwords.escape(prompt)} --dangerously-skip-permissions --output-format json"
+  resume_flag = resume_session ? " --resume #{Shellwords.escape(resume_session)}" : ""
+  cmd = "#{env_prefix}claude -p #{Shellwords.escape(prompt)} --dangerously-skip-permissions --output-format json#{resume_flag}"
 
   puts "  Running Claude..."
   start_time = Time.now
@@ -278,15 +284,36 @@ selected_trials.times do |trial_idx|
       v1_time: nil, v1_pass: false, v1_passed_count: 0, v1_failed_count: 0, v1_total_count: 0, v1_loc: 0,
       v2_time: nil, v2_pass: false, v2_passed_count: 0, v2_failed_count: 0, v2_total_count: 0, v2_loc: 0,
       v1_claude: nil, v2_claude: nil,
+      v1_survival_passed: 0, v1_survival_total: 0, v1_survival_rate: nil,
+      warmup_time: nil, warmup_claude: nil,
     }
+
+    # --- Phase 0: Warmup (same session, score excluded) ---
+    warmup_session_id = nil
+    warmup_prompt = LANGUAGES[lang][:warmup_prompt]
+    if warmup_prompt && !dry_run
+      puts "\n--- Phase 0: Warmup ---"
+      FileUtils.cp(File.join(BASE_DIR, 'SPEC-v1.txt'), v1_dir)
+      (LANGUAGES[lang][:extra_files] || []).each do |f|
+        FileUtils.cp(File.join(BASE_DIR, f), v1_dir)
+      end
+      warmup_log = File.join(LOGS_DIR, "minigit-#{dir_name}-#{trial}-warmup.json")
+      warmup_result = run_claude(warmup_prompt, dir: v1_dir, log_path: warmup_log)
+      record[:warmup_time] = warmup_result[:elapsed_seconds]
+      record[:warmup_claude] = warmup_result[:claude_data]
+      warmup_session_id = warmup_result[:claude_data]&.[](:session_id)
+      puts "  Warmup done in #{warmup_result[:elapsed_seconds]}s (session=#{warmup_session_id || 'none'})"
+    end
 
     # --- Phase 1: v1 ---
     puts "\n--- Phase 1: v1 ---"
-    FileUtils.cp(File.join(BASE_DIR, 'SPEC-v1.txt'), v1_dir)
-    FileUtils.cp(File.join(BASE_DIR, 'test-v1.sh'), v1_dir)
-    (LANGUAGES[lang][:extra_files] || []).each do |f|
-      FileUtils.cp(File.join(BASE_DIR, f), v1_dir)
+    unless warmup_prompt
+      FileUtils.cp(File.join(BASE_DIR, 'SPEC-v1.txt'), v1_dir)
+      (LANGUAGES[lang][:extra_files] || []).each do |f|
+        FileUtils.cp(File.join(BASE_DIR, f), v1_dir)
+      end
     end
+    FileUtils.cp(File.join(BASE_DIR, 'test-v1.sh'), v1_dir)
 
     v1_prompt = "Implement minigit as described in SPEC-v1.txt using #{lang.capitalize}. " \
                 "The executable must be named 'minigit' and be runnable as ./minigit. " \
@@ -300,7 +327,7 @@ selected_trials.times do |trial_idx|
       record[:v1_time] = 0
     else
       v1_log = File.join(LOGS_DIR, "minigit-#{dir_name}-#{trial}-v1.json")
-      v1_result = run_claude(v1_prompt, dir: v1_dir, log_path: v1_log)
+      v1_result = run_claude(v1_prompt, dir: v1_dir, log_path: v1_log, resume_session: warmup_session_id)
       record[:v1_time] = v1_result[:elapsed_seconds]
       record[:v1_claude] = v1_result[:claude_data]
       puts "  Claude finished in #{v1_result[:elapsed_seconds]}s (success=#{v1_result[:success]})"
@@ -349,6 +376,19 @@ selected_trials.times do |trial_idx|
 
       record[:v2_loc] = count_loc(v2_dir, lang)
       puts "  LOC: #{record[:v2_loc]}"
+
+      # --- Modification Survival Rate: re-run v1 tests on v2 code ---
+      puts '  Running v1 survival tests on v2 code...'
+      FileUtils.cp(File.join(BASE_DIR, 'test-v1.sh'), v2_dir) unless File.exist?(File.join(v2_dir, 'test-v1.sh'))
+      survival_result = run_tests('test-v1.sh', dir: v2_dir)
+      record[:v1_survival_passed] = survival_result[:passed]
+      record[:v1_survival_total] = survival_result[:total]
+      record[:v1_survival_rate] = if survival_result[:total] > 0
+                                    (survival_result[:passed].to_f / survival_result[:total] * 100).round(1)
+                                  else
+                                    nil
+                                  end
+      puts "  V1 Survival: #{survival_result[:passed]}/#{survival_result[:total]} (#{record[:v1_survival_rate]}%)"
     end
     end # unless v1_only
 

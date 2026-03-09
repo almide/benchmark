@@ -21,9 +21,9 @@ LANGUAGES = {
   'python'      => { exts: %w[py],     version_cmd: 'python3 --version' },
   'go'          => { exts: %w[go],     version_cmd: "#{GO_DIR}/bin/go version" },
   'almide'      => { exts: %w[almd],   version_cmd: 'almide --version 2>&1 || echo "almide (local)"',
-                     extra_files: %w[CLAUDE.md CHEATSHEET.md stdlib-string.md stdlib-list.md stdlib-map.md stdlib-fs.md stdlib-io.md stdlib-int.md stdlib-json.md stdlib-extra.md build-conf.sh],
+                     extra_files: %w[CLAUDE.md build-conf.sh],
                      rename_files: { 'build-conf.sh' => 'build.sh' },
-                     extra_prompt: 'Write Almide code. Read CLAUDE.md for syntax overview, then read only the stdlib-xxx.md files you need. ' \
+                     extra_prompt: 'Write Almide code. CLAUDE.md has the complete language reference and all stdlib signatures. ' \
                                    'Write miniconf.almd, then bash build.sh && bash test-conf-v1.sh' },
 }
 
