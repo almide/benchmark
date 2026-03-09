@@ -1,5 +1,7 @@
 # Almide (.almd)
 
+**Mission: Almide is the language LLMs can write most accurately.** This benchmark measures modification survival rate.
+
 Do NOT install anything, clone repos, or run cargo.
 
 ## Patterns
@@ -16,9 +18,9 @@ fn hash(data: List[Int]) -> String = {
   string.pad_left(int.to_hex(h), 16, "0")     (* int.to_hex handles sign correctly *)
 }
 
-(* --- string.lines for splitting text, list.get_or for safe access --- *)
+(* --- UFCS: x.method() works — auto-resolves to correct module by type --- *)
 effect fn print_lines(path: String) -> Result[Unit, AppError] = {
-  let lines = string.lines(fs.read_text(path))
+  let lines = fs.read_text(path).lines()
   for line in lines {
     println(line)
   }
@@ -26,26 +28,26 @@ effect fn print_lines(path: String) -> Result[Unit, AppError] = {
 }
 
 fn parse_pair(line: String) -> List[String] = {
-  let parts = string.split(line, " ")
-  let key = list.get_or(parts, 0, "")
-  let val = list.get_or(parts, 1, "")
+  let parts = line.split(" ")
+  let key = parts.get_or(0, "")
+  let val = parts.get_or(1, "")
   [key, val]
 }
 
 (* --- use Map for key-value lookups --- *)
 effect fn parse_config(text: String) -> Result[Map[String, String], AppError] = {
-  let lines = list.filter(string.split(text, "\n"), fn(l) => string.len(l) > 0)
+  let lines = text.split("\n").filter(fn(l) => l.len() > 0)
   let config = list.fold(lines, map.new(), fn(m, line) => {
-    let parts = string.split(line, " ")
-    let key = match list.get(parts, 0) { some(v) => v, none => "" }
-    let val = match list.get(parts, 1) { some(v) => v, none => "" }
+    let parts = line.split(" ")
+    let key = match parts.get(0) { some(v) => v, none => "" }
+    let val = match parts.get(1) { some(v) => v, none => "" }
     map.set(m, key, val)
   })
   ok(config)
 }
 
 effect fn main(args: List[String]) -> Result[Unit, AppError] = {
-  match list.get(args, 1) {
+  match args.get(1) {
     some("run") => { println("running") ok(()) },
     some(other) => err(Custom("unknown: " ++ other)),
     none => { println("usage: app <cmd>") ok(()) },
@@ -69,6 +71,7 @@ effect fn main(args: List[String]) -> Result[Unit, AppError] = {
 (* Lambda *)    fn(x) => expr
 (* Concat *)    "a" ++ "b"   [1] ++ [2]               (* ++ for string AND list *)
 (* XOR *)       a ^ b
+(* UFCS *)      x.len()  x.split(" ")  xs.filter(fn(x) => x > 0)  (* auto-resolves module by type *)
 (* Interp *)    "hello ${name}"
 (* Raw str *)   r"\d+"                                 (* no escape processing *)
 (* Let/Var *)   let x = 1    var y = 2    y = 3
