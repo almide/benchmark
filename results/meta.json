@@ -1,8 +1,23 @@
 {
-  "date": "2026-03-10 02:57:56",
-  "claude_version": "2.1.71 (Claude Code)",
-  "trials": 1,
+  "date": "2026-03-13 01:25:29",
+  "claude_version": "2.1.74 (Claude Code)",
+  "trials": 3,
   "versions": {
-    "almide": "almide 0.3.0"
+    "rust": "rustc 1.89.0 (29483883e 2025-08-04)",
+    "go": "go version go1.25.0 darwin/amd64",
+    "c": "Apple clang version 14.0.3 (clang-1403.0.22.14.1)",
+    "typescript": "not installed",
+    "javascript": "v22.18.0",
+    "java": "openjdk 21.0.2 2024-01-16",
+    "perl": "This is perl 5, version 30, subversion 3 (v5.30.3) built for darwin-thread-multi-2level",
+    "python": "Python 3.11.13",
+    "python/mypy": "not installed",
+    "ruby": "ruby 3.4.7 (2025-10-08 revision 7a5688e2a2) +PRISM [x86_64-darwin22]",
+    "ruby/steep": "not installed",
+    "lua": "not installed",
+    "scheme": "sh: guile: command not found",
+    "ocaml": "not installed",
+    "haskell": "The Glorious Glasgow Haskell Compilation System, version 9.14.1",
+    "almide": "almide 0.5.6"
   }
 }

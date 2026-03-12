@@ -39,6 +39,8 @@ LANG_GROUPS = [
     ["typescript", "go", "rust", "c", "java"],
     # Functional
     ["scheme", "ocaml", "haskell"],
+    # LLM-native
+    ["almide"],
 ]
 LANG_ORDER = [lang for group in LANG_GROUPS for lang in group]
 GROUP_GAP = 0.8  # extra space between groups
@@ -60,6 +62,7 @@ LANG_LABELS = {
     "java": "Java",
     "ocaml": "OCaml",
     "haskell": "Haskell",
+    "almide": "Almide",
 }
 
 # Colour palette
@@ -84,6 +87,8 @@ PALETTE = {
     "scheme":      "#888888",
     "ocaml":       "#A0A0A0",
     "haskell":     "#606060",
+    # LLM-native
+    "almide":      "#10B981",
 }
 DEFAULT_COLOUR = "#999999"
 

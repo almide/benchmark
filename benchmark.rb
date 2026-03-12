@@ -41,10 +41,8 @@ LANGUAGES = {
                      extra_files: %w[CLAUDE.md build.sh],
                      extra_prompt: 'Write Almide code. CLAUDE.md has the complete language reference and all stdlib signatures. ' \
                                    'Write minigit.almd, then bash build.sh && bash test-v1.sh',
-                     warmup_prompt: 'Read CLAUDE.md to learn Almide syntax. Then write a small warmup program warmup.almd ' \
-                                    'that reads a file given as a CLI argument and prints its line count. ' \
-                                    'Build it with: bash build.sh. Fix any errors until it compiles. ' \
-                                    'Then delete warmup.almd.' },
+                     warmup_prompt: 'Read CLAUDE.md carefully to learn Almide syntax, types, and stdlib. ' \
+                                    'Summarize the key differences from Rust in one paragraph.' },
 }
 
 TRIALS = 3
@@ -58,6 +56,7 @@ selected_trials = TRIALS
 selected_start = 1
 dry_run = false
 v1_only = false
+no_warmup = false
 
 i = 0
 while i < ARGV.length
@@ -76,6 +75,9 @@ while i < ARGV.length
     i += 1
   when '--v1-only'
     v1_only = true
+    i += 1
+  when '--no-warmup'
+    no_warmup = true
     i += 1
   else
     i += 1
@@ -290,7 +292,7 @@ selected_trials.times do |trial_idx|
 
     # --- Phase 0: Warmup (same session, score excluded) ---
     warmup_session_id = nil
-    warmup_prompt = LANGUAGES[lang][:warmup_prompt]
+    warmup_prompt = no_warmup ? nil : LANGUAGES[lang][:warmup_prompt]
     if warmup_prompt && !dry_run
       puts "\n--- Phase 0: Warmup ---"
       FileUtils.cp(File.join(BASE_DIR, 'SPEC-v1.txt'), v1_dir)
@@ -333,6 +335,7 @@ selected_trials.times do |trial_idx|
       puts "  Claude finished in #{v1_result[:elapsed_seconds]}s (success=#{v1_result[:success]})"
 
       puts '  Running v1 tests...'
+      FileUtils.cp(File.join(BASE_DIR, 'test-v1.sh'), v1_dir) # re-copy in case Claude deleted it
       test_result = run_tests('test-v1.sh', dir: v1_dir)
       record[:v1_pass] = test_result[:success]
       record[:v1_passed_count] = test_result[:passed]
@@ -367,6 +370,7 @@ selected_trials.times do |trial_idx|
       puts "  Claude finished in #{v2_result[:elapsed_seconds]}s (success=#{v2_result[:success]})"
 
       puts '  Running v2 tests...'
+      FileUtils.cp(File.join(BASE_DIR, 'test-v2.sh'), v2_dir) # re-copy in case Claude deleted it
       test_result = run_tests('test-v2.sh', dir: v2_dir)
       record[:v2_pass] = test_result[:success]
       record[:v2_passed_count] = test_result[:passed]
@@ -379,7 +383,7 @@ selected_trials.times do |trial_idx|
 
       # --- Modification Survival Rate: re-run v1 tests on v2 code ---
       puts '  Running v1 survival tests on v2 code...'
-      FileUtils.cp(File.join(BASE_DIR, 'test-v1.sh'), v2_dir) unless File.exist?(File.join(v2_dir, 'test-v1.sh'))
+      FileUtils.cp(File.join(BASE_DIR, 'test-v1.sh'), v2_dir) # always re-copy for survival test
       survival_result = run_tests('test-v1.sh', dir: v2_dir)
       record[:v1_survival_passed] = survival_result[:passed]
       record[:v1_survival_total] = survival_result[:total]
